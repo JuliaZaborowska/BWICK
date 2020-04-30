@@ -11,10 +11,10 @@ To jest skrypt który służy do czyszczenia ciszy z nagrań. Puszcza się go ty
 na samym początku. 
 '''
 
-df = pd.read_csv('RAVDESS_db.csv')  # Wczytywanie danych o plikach audio z bazy
+df = pd.read_csv('myAudiofile_db.csv')  # Wczytywanie danych o plikach audio z bazy
 
-if len(os.listdir('clear')) == 0:
+if len(os.listdir('myAudioClear')) == 0:
     for f in tqdm(df.fname):
-        signal, rate = librosa.load('RAVDESS/' + f + '.wav', sr=16000)
+        signal, rate = librosa.load('myAudioFiles/' + f + '.wav', sr=16000)
         mask = envelope(signal, rate, 0.0005)
-        wavfile.write(filename='clear/' + f + '.wav', rate=rate, data=signal[mask])
+        wavfile.write(filename='myAudioClear/' + f + '.wav', rate=rate, data=signal[mask])
