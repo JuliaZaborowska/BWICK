@@ -9,7 +9,7 @@ import pandas as pd
 from sklearn.metrics import accuracy_score
 
 
-def build_predicitions(audio_dir):
+def build_predicitions(audio_dir, dirname):
     y_true = []
     y_pred = []
     fn_prob = {}
@@ -41,8 +41,7 @@ def build_predicitions(audio_dir):
 
     return y_true, y_pred, fn_prob
 
-
-df = pd.read_csv('myAudioFile_db.csv')  # Wczytywanie danych o plikach audio z bazy
+df = pd.read_csv('RAVDESS_db_test.csv')  # Wczytywanie danych o plikach audio z bazy
 df = df[df['statement'] == 'dogs']
 # df = df[df['sex'] == 'female']
 # df = df[df['intensivity'] == 'strong']
@@ -57,7 +56,7 @@ with open(p_path, 'rb') as handle:
 model = load_model(config.model_path)
 
 listOfWav = df['fname'].values
-y_true, y_pred, fn_prob = build_predicitions(listOfWav)
+y_true, y_pred, fn_prob = build_predicitions(listOfWav, dirname='RAVDESS')
 
 acc_score = accuracy_score(y_true=y_true, y_pred=y_pred)
 
@@ -71,4 +70,4 @@ for i, row in df.iterrows():
 y_pred = [classes[np.argmax(y)] for y in y_probs]
 df['y_pred'] = y_pred
 
-df.to_csv('predictions/predictionsMy.csv', index=False)
+df.to_csv('predictions/predictionsTest.csv', index=False)

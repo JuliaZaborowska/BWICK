@@ -12,25 +12,12 @@ from keras.models import Sequential
 from keras.callbacks import ModelCheckpoint
 from sklearn.utils.class_weight import compute_class_weight
 import pickle
-import os
+from keras.utils.vis_utils import plot_model
 
 from config import Config
 
 
-def check_data():
-    if os.path.isfile(config.p_path):
-        print('Loading model {}'.format(config.mode))
-        with open(config.p_path, 'rb') as handle:
-            tmp = pickle.load(handle)
-            return tmp
-    else:
-        return None
-
-
 def buildRandFeat():
-    tmp = check_data()
-    if tmp:
-        return tmp[0], tmp[1]  # Jeśli dane są już policzone to nie liczymy od nowa
     X = []
     Y = []
     _min, _max = float('inf'), -float('inf')
@@ -40,15 +27,15 @@ def buildRandFeat():
         file = np.random.choice(df[df['emotion'] == rand_class].index)  # wyznacza losowy plik z wybranej emocji
         rate, signal = wavfile.read('clear/' + file + ".wav")  # wczytuje wybrany plik
         label = df.at[file, 'emotion']  # zapamiętuje emocję nagrania
-        rand_index = np.random.randint(0, signal.shape[0] - config.step)  # losuje próbkę w pliku
-        sample = signal[rand_index:rand_index + config.step]  # pobiera wylosowaną próbkę z pliku
-
-        # wyznaczanie współczynników cepstralnych dla wylosowanej próbki (transponowane, bo ta biblioteka dziwnie liczy)
-        X_sample = mfcc(sample, rate, numcep=config.nfeat, nfilt=config.nfilt, nfft=config.nfft, winfunc=np.hamming)
+        rand_index = np.random.randint(0, signal.shape[0] - 4400)  # losuje próbkę w pliku
+        # magic number 4400 bierze się stąd, że jest to (rate * winstep) * (26 - 1) + winlen * rate
+        sample = signal[rand_index:rand_index + 4400]  # pobiera wylosowaną próbkę z pliku
+        # wyznaczanie współczynników cepstralnych dla wylosowanej próbki
+        X_sample = mfcc(signal=sample, samplerate=rate, numcep=config.nfeat, nfilt=config.nfilt, nfft=config.nfft,
+                        winfunc=np.hamming, winlen=0.025, winstep=0.01)
         _min = min(np.amin(X_sample), _min)
         _max = max(np.amax(X_sample), _max)
         X.append(X_sample)
-        # X.append(X_sample if config.mode == 'conv' else X_sample.T)
         Y.append(classes.index(label))
 
     config.min = _min
@@ -61,7 +48,7 @@ def buildRandFeat():
     elif config.mode == 'time':
         X = X.reshape(X.shape[0], X.shape[1], X.shape[2])
 
-    Y = to_categorical(Y, num_classes=10)
+    Y = to_categorical(Y, num_classes=8)
 
     config.data = (X, Y)
     with open(config.p_path, 'wb') as handle:
@@ -104,14 +91,15 @@ def get_recurrent_model():
     model.summary()
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc'])
 
+    plot_model(model, to_file='model_plot.png', show_shapes=True, show_layer_names=True)
     return model
 
 
-df = pd.read_csv('RAVDESS_db.csv')  # Wczytywanie danych o plikach audio z bazy
+df = pd.read_csv('RAVDESS_db_train.csv')  # Wczytywanie danych o plikach audio z bazy
 df.set_index('fname', inplace=True)
-#df = df[df['statement'] == 'dogs']
-#df = df[df['sex'] == 'female']
-#df = df[df['intensivity'] == 'strong']
+df = df[df['statement'] == 'dogs']
+df = df[df['sex'] == 'female']
+df = df[df['intensivity'] == 'strong']
 
 for f in tqdm(df.index):
     signal, rate = librosa.load('clear/' + f + ".wav", sr=16000)
@@ -153,7 +141,22 @@ class_weight = compute_class_weight('balanced', np.unique(Y_flat), Y_flat)
 checkpoint = ModelCheckpoint(config.model_path, monitor='val_acc', verbose=1, mode='max',
                              save_best_only=True, save_weights_only=False, period=1)
 
-model.fit(X, Y, epochs=20, batch_size=32, shuffle=True, class_weight=class_weight,
-          validation_split=0.1, callbacks=[checkpoint])
+history = model.fit(X, Y, epochs=50, batch_size=32, shuffle=True, class_weight=class_weight,
+                    validation_split=0.1, callbacks=[checkpoint])
 
-#model.save(config.model_path)
+plt.plot(history.history['acc'])
+plt.plot(history.history['val_acc'])
+plt.title('Model accuracy')
+plt.ylabel('Accuracy')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Test'], loc='upper left')
+plt.show()
+
+# Plot training & validation loss values
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('Model loss')
+plt.ylabel('Loss')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Test'], loc='upper left')
+plt.show()
