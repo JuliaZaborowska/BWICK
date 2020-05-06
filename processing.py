@@ -1,8 +1,9 @@
-from typing import List
+import librosa
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+from typing import List
 
 
 def preEmphasis(signal: list, alpha: float) -> np.array:
@@ -20,6 +21,7 @@ def envelope(y, rate, threshold):
         else:
             mask.append(False)
     return mask
+
 
 def calc_fft(y, rate):
     n = len(y)
@@ -57,3 +59,43 @@ def spectrogram(x, rate, windowsize=512, off=0.01, draw=True, title="Spectrogram
         plt.show()
 
     return time, freq, F.T
+
+
+def noise(data):
+    """
+    Adding White Noise.
+    """
+    # you can take any distribution from https://docs.scipy.org/doc/numpy-1.13.0/reference/routines.random.html
+    noise_amp = 0.005 * np.random.uniform() * np.amax(data)
+    data = data.astype('float64') + noise_amp * np.random.normal(size=data.shape[0])
+    return data
+
+
+def shift(data):
+    """
+    Random Shifting.
+    """
+    s_range = int(np.random.uniform(low=-5, high=5) * 500)
+    return np.roll(data, s_range)
+
+
+def stretch(data, rate=0.8):
+    """
+    Streching the Sound.
+    """
+    data = librosa.effects.time_stretch(data, rate)
+    return data
+
+
+def pitch(data, sample_rate):
+    """
+    Pitch Tuning.
+    """
+    bins_per_octave = 12
+    pitch_pm = 2
+    pitch_change = pitch_pm * 2 * (np.random.uniform())
+    data = librosa.effects.pitch_shift(data.astype('float64'),
+                                       sample_rate, n_steps=pitch_change,
+                                       bins_per_octave=bins_per_octave)
+    return data
+

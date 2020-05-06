@@ -22,7 +22,12 @@ def CNN(input_shape, class_number):
 
     return model
 
-"""
+
+def CNN_article_version(input_shape, class_number):
+    """
+    NIE DZIAŁA, NIE DOTYKAĆ.
+    DON'T TOUCH IT.
+    """
     model = Sequential()
     model.add(Conv2D(16, (7, 7), activation='relu', strides=(2, 2), padding='same', input_shape=input_shape))
     model.add(Conv2D(32, (5, 5), activation='relu', strides=(2, 2), padding='same'))
@@ -41,4 +46,4 @@ def CNN(input_shape, class_number):
     model.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['acc'])
 
     return model
-"""
+

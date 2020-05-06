@@ -1,22 +1,24 @@
-from keras.callbacks import ModelCheckpoint
-from keras.utils import to_categorical
-from tqdm import tqdm
+# region Imports
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import librosa
-from librosa.feature import melspectrogram
 import os
-from scipy.signal import windows
+
+from keras.callbacks import ModelCheckpoint
+from keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
-from librosa import display
-from processing import spectrogram
 from python_speech_features import mfcc
+from tqdm import tqdm
 
 from config import Config
 from CNN import CNN
 
-bitrate = 44100
+# endregion
+
+# region Inicjalizacja
+bitrate: int = 44100
 config = Config('conv')
 
 # Wczytywanie danych o plikach audio z bazy do pamięci
@@ -24,15 +26,42 @@ inputDir: str = 'RAVDESS'
 df = pd.read_csv('RAVDESS_db.csv')
 df.set_index('fname', inplace=True)
 
-# Ograniczenie danych do 2 emocji
+# endregion
+
+# region Wybór zbioru danych
+
+"""
+Wybrany zbiór danych trzeba odkomentować. Jeśli wszystkie są zakomentowane, do działa rozpoznawanie 
+wszystkich 8 emocji.
+"""
+
+# Ograniczenie danych do 2 emocji: happy, sad
 df = df[((df["emotion"] == "happy") | (df["emotion"] == "sad"))]
 
-# Podział na zbiór testowy i treningowy
+# Ograniczenie danych do 5 emocji: angry, suprised, calm, sad, happy, fearful
+# df = df[((df["emotion"] != "fearful") & (df["emotion"] != "disgust") & (df["emotion"] != "neutral"))]
+
+# Ograniczenie danych do 2 emocji: angry, calm
+# df = df[((df["emotion"] == "angry") | (df["emotion"] == "calm"))]
+
+# Ograniczenie danych do 3 emocji: fearful, disgust, angry
+# df = df[((df["emotion"] == "angry") | (df["emotion"] == "fearful") | (df["emotion"] == "disgust"))]
+
+# Ograniczenie danych do 2 emocji: neutral, calm
+# df = df[((df["emotion"] == "angry") | (df["emotion"] == "fearful") | (df["emotion"] == "disgust"))]
+
+# endregion
+
+# region Podział na zbiór testowy i treningowy
+
 df, df_test = train_test_split(df, test_size=0.1)
 
 df_test.to_csv("RAVDESS_db_TEST.csv", index=True)
 df.to_csv("RAVDESS_db_TRAIN.csv", index=True)
 
+# endregion
+
+# region Wyznaczanie prawdopodobieństwa wylosowania próbki danej emocji z bazy danych
 
 print("Obliczanie długości nagrań:")
 # Obliczenie czasu każdego nagrania i dopisanie go do tabeli df
@@ -47,24 +76,27 @@ classes = list(np.unique(df['emotion']))  # zwraca nazwy emocji jakie są w plik
 class_dist = df.groupby(['emotion'])['length'].mean()  # oblicza średnią długość nagrania dla każdej emocji
 prob_dist = class_dist / class_dist.sum()
 
+# Rysowanie wykresu
 fig, ax = plt.subplots()
 ax.set_title('Prawdopodobieństwo wylosowania próbki \ndanej emocji z biblioteki nagrań')
 ax.pie(class_dist, labels=class_dist.index, shadow=False, startangle=90, autopct='%1.1f%%')
 ax.axis('equal')
 plt.show()
 
+# endregion
+
+# region Obliczanie cech dla każdego nagrania w zbiorze treningowym
 
 X = []
 Y = []
 for f in tqdm(df.index):
-    # chcemy rozmiar 128
-    # duration = (128 - 1) * hop_length / rate
-    signal, rate = librosa.load(os.path.join(inputDir, f + '.wav'), res_type='kaiser_fast', sr=bitrate, duration=2.8, offset=0.2)
+    signal, rate = librosa.load(os.path.join(inputDir, f + '.wav'),
+                                res_type='kaiser_fast',
+                                sr=bitrate,
+                                duration=2.8,
+                                offset=0.2)
     label = df.at[f, 'emotion']
-
-    #mel = melspectrogram(signal, rate, n_mels=128, n_fft=512, hop_length=128, window=windows.hamming(512))
     mel = mfcc(signal, rate, numcep=13, nfilt=26, nfft=2048, winfunc=np.hamming)
-
     X.append(mel)
     Y.append(classes.index(label))
 
@@ -74,12 +106,16 @@ X, Y = np.array(X), np.array(Y)
 X = X.reshape(X.shape[0], X.shape[1], X.shape[2], 1)
 input_shape = (X.shape[1], X.shape[2], 1)
 
+# endregion
+
+# region Nauka siecią splotową i zapisywanie modelu
+
 try:
     os.mkdir('./models')
 except OSError as error:
     print(error)
 
-
+# zapisywanie modelu sieci tylko wtedy kiedy kolejna epoka okaże się lepsza niż poprzednia
 checkpoint = ModelCheckpoint(config.model_path, monitor='val_acc', verbose=1, mode='max',
                              save_best_only=True, save_weights_only=False, period=1)
 
@@ -103,3 +139,5 @@ plt.ylabel('Loss')
 plt.xlabel('Epoch')
 plt.legend(['Train', 'Test'], loc='upper left')
 plt.show()
+
+# endregion
