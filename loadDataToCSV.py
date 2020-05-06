@@ -9,7 +9,8 @@ headings: list = [
     "statement",
     "repetition",
     "actor",
-    "sex"
+    "sex",
+    "voice"
 ]
 
 emotions: dict = {
@@ -38,6 +39,11 @@ sex: dict = {
     1: "male"
 }
 
+voices: dict = {
+    "01": "speech",
+    "02": "song"
+}
+
 
 def makeSeriesFromName(filename: str) -> list:
 
@@ -45,6 +51,7 @@ def makeSeriesFromName(filename: str) -> list:
     filename = filename[: filename.find('.')]
     name = filename
     nums = name.split(sep='-')
+    voice = voices.get(nums[1])
     emotion = emotions.get(nums[2])
     intens = intesivity.get(nums[3])
     sentence = statement.get(nums[4])
@@ -59,7 +66,8 @@ def makeSeriesFromName(filename: str) -> list:
         sentence,
         repetition,
         actor,
-        c3
+        c3,
+        voice
     ]
 
     return record

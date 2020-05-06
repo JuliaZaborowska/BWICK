@@ -66,12 +66,14 @@ df: pd.DataFrame = pd.read_csv(csvName)  # Wczytywanie danych o plikach audio z 
 
 sumTime: float = 0
 sumTimeTrimmed: float = 0
+bitrate = 44100
 
 if len(os.listdir(output)) == 0:
     for f in tqdm(df.fname):
-        signal, rate = librosa.load(os.path.join(input, f + '.wav'), sr=16000)
+        signal, rate = librosa.load(os.path.join(input, f + '.wav'), sr=bitrate)
         mask = envelope(signal, rate, 0.0005)
         write_wav(path=os.path.join(output, f + '.wav'), sr=rate, y=signal[mask], norm=False)
+        #signal = librosa.effects.trim()
         sumTime += get_duration(signal)
         sumTimeTrimmed += get_duration(signal)
 

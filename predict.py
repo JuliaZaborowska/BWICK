@@ -71,4 +71,4 @@ for i, row in df.iterrows():
 y_pred = [classes[np.argmax(y)] for y in y_probs]
 df['y_pred'] = y_pred
 
-df.to_csv('predictions/predictionsMy.csv', index=False)
+df.to_csv('predictions/test.csv', index=False)
