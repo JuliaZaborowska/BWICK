@@ -2,7 +2,7 @@ import pandas as pd
 import os
 from tqdm import tqdm
 
-headings = [
+headings: list = [
     "fname",
     "emotion",
     "intensivity",
@@ -12,7 +12,7 @@ headings = [
     "sex"
 ]
 
-emotions = {
+emotions: dict = {
     "01": "neutral",
     "02": "calm",
     "03": "happy",
@@ -23,17 +23,17 @@ emotions = {
     "08": "suprised"
 }
 
-intesivity = {
+intesivity: dict = {
     "01": "normal",
     "02": "strong"
 }
 
-statement = {
+statement: dict = {
     "01": "kids",
     "02": "dogs"
 }
 
-sex = {
+sex: dict = {
     0: "female",
     1: "male"
 }
@@ -65,17 +65,14 @@ def makeSeriesFromName(filename: str) -> list:
     return record
 
 
-dir = os.listdir('RAVDESS/')
+inputDir: str = 'RAVDESS'
+outputCSV: str = 'RAVDESS_db.csv'
+
+dir = os.listdir(inputDir)
 rows = []
 
 for audiofile in tqdm(dir):
-
     rows.append(makeSeriesFromName(audiofile))
 
-
 df = pd.DataFrame(rows, columns=headings)
-df.to_csv("RAVDESS_db.csv")
-
-
-
-
+df.to_csv(outputCSV, index=False)

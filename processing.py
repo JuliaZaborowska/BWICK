@@ -4,9 +4,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
+
 def preEmphasis(signal: list, alpha: float) -> np.array:
     emphasized_signal = np.append(signal[0], signal[1:] - alpha * signal[:-1])
-
     return emphasized_signal
 
 
@@ -20,7 +20,6 @@ def envelope(y, rate, threshold):
         else:
             mask.append(False)
     return mask
-
 
 def calc_fft(y, rate):
     n = len(y)
@@ -58,5 +57,3 @@ def spectrogram(x, rate, windowsize=512, off=0.01, draw=True, title="Spectrogram
         plt.show()
 
     return time, freq, F.T
-
-
