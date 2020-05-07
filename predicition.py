@@ -22,7 +22,7 @@ def build_predicitions():
     print('Extracting features from audio')
     for f in tqdm(df.index):
         signal, rate = librosa.load(os.path.join(inputDir, f + '.wav'), res_type='kaiser_fast', sr=bitrate,
-                                    duration=2.8, offset=0.2)
+                                    duration=2.8, offset=0.1)
         label = df.at[f, 'emotion']
         c = classes.index(label)
 
@@ -40,8 +40,9 @@ def build_predicitions():
 # region Initialization
 
 bitrate: int = 44100
-database = 'RAVDESS_db_TEST.csv'
-inputDir: str = 'RAVDESS'
+#database = 'RAVDESS_db_TEST.csv'
+database = 'myAudio_db.csv'
+inputDir: str = 'clear'
 p_path = os.path.join('models', 'conv.model')
 
 df = pd.read_csv(database)  # Wczytywanie danych o plikach audio z bazy

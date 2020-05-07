@@ -51,7 +51,7 @@ wszystkich 8 emocji.
 # df = df[((df["emotion"] == "neutral") | (df["emotion"] == "calm"))]
 
 # Ograniczenie danych do zdań z kids
-df = df[(df["statement"] == "kids")]
+# df = df[(df["statement"] == "kids")]
 
 # Ograniczenie danych do zdań z dogs
 # df = df[(df["statement"] == "dogs")]
@@ -155,6 +155,7 @@ plt.title('Model accuracy')
 plt.ylabel('Accuracy')
 plt.xlabel('Epoch')
 plt.legend(['Train', 'Test'], loc='upper left')
+plt.savefig('wykres_1.png')
 plt.show()
 
 # Plot training & validation loss values
@@ -164,6 +165,7 @@ plt.title('Model loss')
 plt.ylabel('Loss')
 plt.xlabel('Epoch')
 plt.legend(['Train', 'Test'], loc='upper left')
+plt.savefig('wykres_2.png')
 plt.show()
 
 # endregion

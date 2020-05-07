@@ -10,3 +10,15 @@ clear/
 RAVDESS/
 
 models/
+
+MY_AUDIO/
+
+RAVDESS_db_TRAIN.csv
+
+RAVDESS_db_TEST.csv
+
+confusion_matrix.png
+
+pizza.png
+
+predictions/
