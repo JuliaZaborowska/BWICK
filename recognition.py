@@ -36,7 +36,7 @@ wszystkich 8 emocji.
 """
 
 # Ograniczenie danych do 2 emocji: happy, sad
-df = df[((df["emotion"] == "happy") | (df["emotion"] == "sad"))]
+# df = df[((df["emotion"] == "happy") | (df["emotion"] == "sad"))]
 
 # Ograniczenie danych do 5 emocji: angry, suprised, calm, sad, happy, fearful
 # df = df[((df["emotion"] != "fearful") & (df["emotion"] != "disgust") & (df["emotion"] != "neutral"))]
@@ -48,7 +48,32 @@ df = df[((df["emotion"] == "happy") | (df["emotion"] == "sad"))]
 # df = df[((df["emotion"] == "angry") | (df["emotion"] == "fearful") | (df["emotion"] == "disgust"))]
 
 # Ograniczenie danych do 2 emocji: neutral, calm
-# df = df[((df["emotion"] == "angry") | (df["emotion"] == "fearful") | (df["emotion"] == "disgust"))]
+# df = df[((df["emotion"] == "neutral") | (df["emotion"] == "calm"))]
+
+# Ograniczenie danych do zdań z kids
+df = df[(df["statement"] == "kids")]
+
+# Ograniczenie danych do zdań z dogs
+# df = df[(df["statement"] == "dogs")]
+
+# Ograniczenie danych do zdań wymawianych przez kobiety
+# df = df[(df["sex"] == "female")]
+
+# Ograniczenie danych do zdań wymawianych przez mężczyzn
+# df = df[(df["sex"] == "male")]
+
+# Ograniczenie danych do zdań śpiewanych
+# df = df[(df["voice"] == "song")]
+
+# Ograniczenie danych do zdań mówionych
+# df = df[(df["voice"] == "speech")]
+
+# Ograniczenie danych do zdań śpiewanych
+# df = df[(df["intensivity"] == "normal")]
+
+# Ograniczenie danych do zdań mówionych
+# df = df[(df["intensivity"] == "strong")]
+
 
 # endregion
 
@@ -81,6 +106,7 @@ fig, ax = plt.subplots()
 ax.set_title('Prawdopodobieństwo wylosowania próbki \ndanej emocji z biblioteki nagrań')
 ax.pie(class_dist, labels=class_dist.index, shadow=False, startangle=90, autopct='%1.1f%%')
 ax.axis('equal')
+plt.savefig('pizza.png')
 plt.show()
 
 # endregion
@@ -94,7 +120,7 @@ for f in tqdm(df.index):
                                 res_type='kaiser_fast',
                                 sr=bitrate,
                                 duration=2.8,
-                                offset=0.2)
+                                offset=0.1)
     label = df.at[f, 'emotion']
     mel = mfcc(signal, rate, numcep=13, nfilt=26, nfft=2048, winfunc=np.hamming)
     X.append(mel)

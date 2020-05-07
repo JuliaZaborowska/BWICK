@@ -8,9 +8,8 @@ import matplotlib.pyplot as plt
 import seaborn as sn
 from tqdm import tqdm
 from keras.models import load_model
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, confusion_matrix
 from python_speech_features import mfcc
-from sklearn.metrics import confusion_matrix
 
 # endregion
 
@@ -74,20 +73,22 @@ for i, row in df.iterrows():
 y_pred = [classes[np.argmax(y)] for y in y_probs]
 df['y_pred'] = y_pred
 
-df.to_csv('predictions/test2.csv', index=False)
+df.to_csv('predictions/predicition.csv', index=False)
 
 # endregion
 
 # region confusion matrix
 
-data = {'y_Actual':    y_true,
-        'y_Predicted': y_predicted
-        }
-
-df = pd.DataFrame(data, columns=['y_Actual', 'y_Predicted'])
-conf_matrix = pd.crosstab(df['y_Actual'], df['y_Predicted'])
-
-sn.heatmap(conf_matrix, annot=True)
+data = confusion_matrix(y_true, y_predicted)
+df_cm = pd.DataFrame(data, columns=classes, index=classes)
+df_cm.index.name = 'Actual'
+df_cm.columns.name = 'Predicted'
+plt.figure(figsize=(10, 7))
+sn.set(font_scale=1.4)
+figure = sn.heatmap(df_cm, cmap="Blues", annot=True, annot_kws={"size": 16})
+fig = figure.get_figure()
+fig.savefig('confusion_matrix.png')
 plt.show()
+
 
 # endregion
